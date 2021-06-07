@@ -6,6 +6,21 @@ import (
 	"thyago.com/monkey/lexer"
 )
 
+func TestInvalidStatements(t *testing.T) {
+	input := `
+let 838383;
+`
+	l := lexer.New(input)
+	p := New(l)
+
+	_ = p.ParseProgram()
+
+	errors := p.Errors()
+	if errors[0] != "expected next token to be IDENT, got INT instead" {
+		t.Fatalf("Doesn't contain expected error")
+	}
+}
+
 func TestLetStatements(t *testing.T) {
 	input := `
 let x = 5;
@@ -16,9 +31,7 @@ let foobar = 838383;
 	p := New(l)
 
 	program := p.ParseProgram()
-	if program == nil {
-		t.Fatalf("ParseProgram() returned nil")
-	}
+	checkParserErrors(t, p)
 
 	if (len(program.Statements) != 3) {
 		t.Fatalf("program.Statements does not contain 3 statements. got = %d", len(program.Statements))
@@ -64,4 +77,18 @@ func testLetStatement(t *testing.T, s ast.Statement, name string) bool {
 	}
 
 	return true
+}
+
+func checkParserErrors(t *testing.T, p *Parser) {
+	errors := p.Errors()
+
+	if len(errors) == 0 {
+		return;
+	}
+
+	t.Errorf("parser has %d errors", len(errors))
+	for _, msg := range errors {
+		t.Errorf("parse error: %q", msg)
+	}
+	t.FailNow()
 }

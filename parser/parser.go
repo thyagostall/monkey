@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"thyago.com/monkey/ast"
 	"thyago.com/monkey/lexer"
 	"thyago.com/monkey/token"
@@ -8,13 +9,17 @@ import (
 
 type Parser struct {
 	l *lexer.Lexer
+	errors []string
 
 	curToken token.Token
 	peekToken token.Token
 }
 
 func New(l *lexer.Lexer) *Parser {
-	p := &Parser{l: l}
+	p := &Parser{
+		l: l,
+		errors: []string{},
+	}
 
 	p.NextToken()
 	p.NextToken()
@@ -25,6 +30,10 @@ func New(l *lexer.Lexer) *Parser {
 func (p *Parser) NextToken() {
 	p.curToken = p.peekToken
 	p.peekToken = p.l.NextToken()
+}
+
+func (p *Parser) Errors() []string {
+	return p.errors
 }
 
 func (p *Parser) ParseStatement() ast.Statement {
@@ -64,11 +73,17 @@ func (p *Parser) PeekTokenIs(t token.TokenType) bool {
 	return p.peekToken.Type == t
 }
 
+func (p *Parser) PeekError(t token.TokenType) {
+	msg := fmt.Sprintf("expected next token to be %s, got %s instead", t, p.peekToken.Type)
+	p.errors = append(p.errors, msg)
+}
+
 func (p *Parser) ExpectPeek(t token.TokenType) bool {
 	if p.PeekTokenIs(t) {
 		p.NextToken()
 		return true
 	} else {
+		p.PeekError(t)
 		return false
 	}
 }
