@@ -21,13 +21,13 @@ func New(l *lexer.Lexer) *Parser {
 		errors: []string{},
 	}
 
-	p.NextToken()
-	p.NextToken()
+	p.nextToken()
+	p.nextToken()
 
 	return p
 }
 
-func (p *Parser) NextToken() {
+func (p *Parser) nextToken() {
 	p.curToken = p.peekToken
 	p.peekToken = p.l.NextToken()
 }
@@ -36,18 +36,18 @@ func (p *Parser) Errors() []string {
 	return p.errors
 }
 
-func (p *Parser) ParseStatement() ast.Statement {
+func (p *Parser) parseStatement() ast.Statement {
 	switch p.curToken.Type {
 	case token.LET:
-		return p.ParseLetStatement()
+		return p.parseLetStatement()
 	case token.RETURN:
-		return p.ParseReturnStatement()
+		return p.parseReturnStatement()
 	default:
 		return nil
 	}
 }
 
-func (p *Parser) ParseLetStatement() *ast.LetStatement {
+func (p *Parser) parseLetStatement() *ast.LetStatement {
 	stmt := &ast.LetStatement{Token: p.curToken}
 
 	if !p.ExpectPeek(token.IDENT) {
@@ -60,44 +60,44 @@ func (p *Parser) ParseLetStatement() *ast.LetStatement {
 		return nil
 	}
 
-	for !p.CurTokenIs(token.SEMICOLON) {
-		p.NextToken()
+	for !p.curTokenIs(token.SEMICOLON) {
+		p.nextToken()
 	}
 
 	return stmt
 }
 
-func (p *Parser) ParseReturnStatement() *ast.ReturnStatement {
+func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	stmt := &ast.ReturnStatement{Token: p.curToken}
 
-	p.NextToken()
+	p.nextToken()
 
-	for !p.CurTokenIs(token.SEMICOLON) {
-		p.NextToken();
+	for !p.curTokenIs(token.SEMICOLON) {
+		p.nextToken();
 	}
 
 	return stmt
 }
 
-func (p *Parser) CurTokenIs(t token.TokenType) bool {
+func (p *Parser) curTokenIs(t token.TokenType) bool {
 	return p.curToken.Type == t
 }
 
-func (p *Parser) PeekTokenIs(t token.TokenType) bool {
+func (p *Parser) peekTokenIs(t token.TokenType) bool {
 	return p.peekToken.Type == t
 }
 
-func (p *Parser) PeekError(t token.TokenType) {
+func (p *Parser) peekError(t token.TokenType) {
 	msg := fmt.Sprintf("expected next token to be %s, got %s instead", t, p.peekToken.Type)
 	p.errors = append(p.errors, msg)
 }
 
 func (p *Parser) ExpectPeek(t token.TokenType) bool {
-	if p.PeekTokenIs(t) {
-		p.NextToken()
+	if p.peekTokenIs(t) {
+		p.nextToken()
 		return true
 	} else {
-		p.PeekError(t)
+		p.peekError(t)
 		return false
 	}
 }
@@ -107,11 +107,11 @@ func (p *Parser) ParseProgram() *ast.Program {
 	program.Statements = []ast.Statement{}
 
 	for p.curToken.Type != token.EOF {
-		stmt := p.ParseStatement()
+		stmt := p.parseStatement()
 		if stmt != nil {
 			program.Statements = append(program.Statements, stmt)
 		}
-		p.NextToken()
+		p.nextToken()
 	}
 
 	return program
