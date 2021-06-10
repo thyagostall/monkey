@@ -168,13 +168,13 @@ func (p *Parser) parseStatement() ast.Statement {
 func (p *Parser) parseLetStatement() *ast.LetStatement {
 	stmt := &ast.LetStatement{Token: p.curToken}
 
-	if !p.ExpectPeek(token.IDENT) {
+	if !p.expectPeek(token.IDENT) {
 		return nil
 	}
 
 	stmt.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 
-	if !p.ExpectPeek(token.ASSIGN) {
+	if !p.expectPeek(token.ASSIGN) {
 		return nil
 	}
 
@@ -249,7 +249,7 @@ func (p *Parser) peekError(t token.TokenType) {
 	p.errors = append(p.errors, msg)
 }
 
-func (p *Parser) ExpectPeek(t token.TokenType) bool {
+func (p *Parser) expectPeek(t token.TokenType) bool {
 	if p.peekTokenIs(t) {
 		p.nextToken()
 		return true
