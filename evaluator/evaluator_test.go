@@ -44,6 +44,10 @@ func TestErrorHandling(t *testing.T) {
 			"foobar",
 			"identifier not found: foobar",
 		},
+		{
+			"let notfun = 5; notfun()",
+			"not a function: INTEGER",
+		},
 	}
 
 	for _, tt := range tests {
