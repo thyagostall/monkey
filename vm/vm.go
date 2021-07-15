@@ -180,14 +180,13 @@ func (vm *VM) Run() error {
 		case code.OpPop:
 			vm.pop()
 		case code.OpCall:
-			fn, ok := vm.stack[vm.sp - 1].(*object.CompiledFunction)
-			if !ok {
-				return fmt.Errorf("calling non-function")
-			}
+			numArgs := code.ReadUint8(ins[ip+1:])
+			vm.currentFrame().ip += 1
 
-			frame := NewFrame(fn, vm.sp)
-			vm.pushFrame(frame)
-			vm.sp = frame.basePointer + fn.NumLocals
+			err := vm.callFunction(int(numArgs))
+			if err != nil {
+				return err
+			}
 		case code.OpReturnValue:
 			returnValue := vm.pop()
 
@@ -376,6 +375,23 @@ func (vm *VM) executeHashIndex(hash, index object.Object) error {
 	}
 
 	return vm.push(pair.Value)
+}
+
+func (vm *VM) callFunction(numArgs int) error {
+	fn, ok := vm.stack[vm.sp - 1 - int(numArgs)].(*object.CompiledFunction)
+	if !ok {
+		return fmt.Errorf("calling non-function")
+	}
+
+	if numArgs != fn.NumParameters {
+		return fmt.Errorf("wrong number of arguments: want=%d, got=%d", fn.NumParameters, numArgs)
+	}
+
+	frame := NewFrame(fn, vm.sp - numArgs)
+	vm.pushFrame(frame)
+	vm.sp = frame.basePointer + fn.NumLocals
+
+	return nil
 }
 
 func (vm *VM) push(o object.Object) error {
