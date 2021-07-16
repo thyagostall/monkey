@@ -94,7 +94,7 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`rest("corasd")`, "argument to `rest` not supported, got STRING"},
 		{`rest([1, 2, 3], [2, 3])`, "wrong number of arguments. got = 2, want = 1"},
 		{`push([1, 2, 3], 4)`, []int{1, 2, 3, 4}},
-		{`push("corasd", 4)`, "argument to `rest` not supported, got STRING"},
+		{`push("corasd", 4)`, "argument to `push` not supported, got STRING"},
 		{`push([1, 2, 3])`, "wrong number of arguments. got = 1, want = 2"},
 	}
 
